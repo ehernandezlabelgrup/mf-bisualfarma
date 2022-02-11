@@ -1,17 +1,37 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './App'
+class Element extends HTMLElement {
+  constructor () {
+    super()
+    this._report = false
+  }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+  connectedCallback () {
+    this.attachShadow({ mode: 'open' })
+    this.render()
+  }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+  report (value) {
+    this._report = value
+    this.render()
+  }
+
+  render () {
+    if (this.shadowRoot) {
+      const props = {
+        report: this._report
+      }
+      for (let i = 0; i < this.attributes.length; i++) {
+        props[this.attributes[i].name] = this.attributes[i].value
+      }
+      ReactDOM.render(<App {...props} />, this.shadowRoot)
+    }
+  }
+
+  disconnectedCallback () {
+    ReactDOM.unmountComponentAtNode(this.shadowRoot)
+  }
+}
+
+window.customElements.define('bisualfarma-layout', Element)
